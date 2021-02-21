@@ -1,8 +1,15 @@
 # Attention Is All You Need
 Attention Is All You Need 논문을 pytorch 를 통해 구현
 
+## Initialize
+spacy token 데이터를 다운로드
+```shell
+python -m spacy download en
+python -m spacy download de 
+```
+
 ## Train
-```shell script
+```shell
 python train.py --n=6 \
                 --d-model=512 \
                 --d-ff=8 \
