@@ -6,8 +6,6 @@ from model import TransformerModel
 
 def train(epoch=1, batch_size=16, warmup_steps=4000, data_cls=WMT14, root_data_path='.data', **model_params):
     print(f"Train : {epoch=}, {batch_size=}")
-    model = TransformerModel(**model_params)
-
     source = Field(tokenize='spacy', init_token='<sos>', eos_token='<eos>', tokenizer_language='en_core_web_sm')
     target = Field(tokenize='spacy', init_token='<sos>', eos_token='<eos>', tokenizer_language='de_core_news_sm')
 
@@ -16,6 +14,8 @@ def train(epoch=1, batch_size=16, warmup_steps=4000, data_cls=WMT14, root_data_p
 
     source.build_vocab(train_data)
     target.build_vocab(train_data)
+
+    model = TransformerModel(vocab_sizes=(len(source.vocab), len(target.vocab)), **model_params)
 
     k = model.d_model ** -0.5
     opt = torch.optim.Adam(model.parameters(), lr=k * warmup_steps ** -1.5, betas=(0.9, 0.98), eps=1e-9)
