@@ -30,11 +30,8 @@ def train(epoch=1, batch_size=128, warmup_steps=4000, data_cls=WMT14, root_data_
     criterion = torch.nn.CrossEntropyLoss(ignore_index=trg_padding_idx, reduction='sum')
 
     model.train()
-
-    total_loss = 0
-    n = 0
     for e in range(epoch):
-        epoch_loss = 0
+        epoch_loss = n = 0
         for batch in train_it:
             opt.zero_grad()
 
@@ -48,9 +45,20 @@ def train(epoch=1, batch_size=128, warmup_steps=4000, data_cls=WMT14, root_data_
             n += batch.trg.ne(trg_padding_idx).sum().item()
 
         epoch_loss = epoch_loss / n
-        print(f"Epoch {e + 1}/{epoch} Loss : {epoch_loss}")
-        total_loss += epoch_loss
-    print(f"Total Loss : {total_loss}")
+        print(f"Epoch {e + 1}/{epoch} Train Loss : {epoch_loss}")
+
+    model.eval()
+    eval_loss = n = 0
+    with torch.no_grad():
+        for batch in valid_it:
+            oo = model(batch.src, batch.trg[:, :-1])
+            loss = criterion(oo.view(-1, trg_vocab_size), batch.trg[:, 1:].flatten())
+
+            eval_loss += loss.item()
+            n += batch.trg.ne(trg_padding_idx).sum().item()
+    eval_loss /= n
+    print(f"Total Evaluation Loss : {eval_loss}")
+
     return model
 
 
@@ -79,9 +87,9 @@ if __name__ == '__main__':
     parser.add_argument('--warmup-steps', type=int, nargs='?')
 
     args = vars(parser.parse_args())
-    path = args.pop('model_path')
+    model_path = args.pop('model_path')
     if args.pop('use_small_data'):
         args['data_cls'] = Multi30k
 
     trained_model = train(**args)
-    torch.save(trained_model, path)
+    torch.save(trained_model, model_path)
