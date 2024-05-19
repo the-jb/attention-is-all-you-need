@@ -3,7 +3,6 @@ Attention Is All You Need 논문을 pytorch 를 통해 구현
 
 ## 구현 방향
 - **가장 논문 그대로에 가깝게 다른 첨가나 개선 없이 구현하려고 함**
-  - 논문에 정확히 표시되어있지 않은 부분은 max_seq_len과 tokenize 부분을 제외하면 없음.
   - 클래스, 모듈 등을 가장 논문의 설명에 맞게 정확하게 분리하고 네이밍하는 방향으로 설계.
   - 모든 클래스의 forward 동작은 논문에서 정의한 그대로 동작함.  
     예를 들어, PositionalEncoding 의 경우 다른 구현물들을 보면 대부분 Embedding 과 혼용하거나 Embedding 과 PositionalEncoding 결과를 합친 결과를 return 하는 경우가 많음. 하지만 여기서는 PositionalEncoding 의 정의 그대로를 return 하고, 논문처럼 상위 동작단에서 그 결과물들을 합치는 처리를 함.
@@ -15,16 +14,11 @@ Attention Is All You Need 논문을 pytorch 를 통해 구현
 - **위를 만족하면서도 코드의 효율성을 유지**
   - 불필요한 계산 낭비, 효율성이 좋지 않은 코딩을 하지 않음
   - mask, sinusoids 등은 한번 계산해두면 하위에서 forward 시에도 값이 바뀌지 않음. 따라서 가장 상위에 배치하고, 이를 forward 파라매터를 통해 이 값을 사용하는 방향으로 구현
-  - tokenize 부분을 제외하고 최소한의 torch 모듈만 사용해서 구현하였고, 가급적 다른 확장모듈 설치등 없이 어떤 환경에서든 동작할 수 있게 함
+  - tokenize 와 dataset 부분을 제외하고 최소한의 torch 모듈만 사용해서 구현하였고, 가급적 다른 확장모듈 설치등 없이 어떤 환경에서든 동작할 수 있게 함
 
-## Initialize
-spacy token 데이터를 다운로드
-```shell
-python -m spacy download en
-python -m spacy download de 
-```
+## Updates
+- 기존 `torchtext` + `spacy` 조합을 활용하여 데이터셋 다운로드 및 preprocessing 을 진행하였으나, 더이상 `torchtext` 에서 WMT14 를 지원하지 않아 로직을 재구성하여 널리 사용되는 Huggingface 의 `datasets` 및 `tokenizers` 로 dependency 변경
 
-해당 다운로드를 수행한 경로를 아래 `root-data-path`에 지정해야 한다.
 
 ## Train
 ```shell
